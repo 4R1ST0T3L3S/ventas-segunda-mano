@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Venta Online</title>
+<meta name="description" content="Panel privado de tus ventas en Vinted y Wallapop.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Venta Online">
+<link rel="preload" href="/fuentes/geist-300.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* Diseño de VISION (rediseño Offsuit): negro absoluto, superficies de relleno sin bordes ni brillos, cifras finas
+     y tabulares, etiquetas en mayúsculas espaciadas y un solo rojo, el punto de la marca, sin halo. */
+  @font-face { font-family: Geist; src: url(/fuentes/geist-300.woff2) format('woff2'); font-weight: 300; font-display: swap; }
+  @font-face { font-family: Geist; src: url(/fuentes/geist-400.woff2) format('woff2'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: Geist; src: url(/fuentes/geist-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: Geist; src: url(/fuentes/geist-600.woff2) format('woff2'); font-weight: 600; font-display: swap; }
+  @font-face { font-family: Geist; src: url(/fuentes/geist-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+  :root {
+    color-scheme: dark;
+    --bg: #000; --panel: #141416; --tile: #1c1c1f; --tile-2: #26262a;
+    --sep: rgba(255, 255, 255, 0.08); --activo: rgba(255, 255, 255, 0.12); --hover: rgba(255, 255, 255, 0.04);
+    --ink: #f5f5f2; --ink-2: #9b9ba4; --ink-3: #83838c; --ink-4: #3f3f46;
+    /* Series validadas sobre el panel (banda de luminosidad, daltonismo y contraste). */
+    --vinted: #5c7cfa; --wallapop: #e46a12;
+    /* Estados: siempre con icono o glifo y texto. Una bajada es ámbar: el rojo no se usa para «el dato bajó». */
+    --ok: #34d399; --warn: #f59e0b; --bad: #ef4444; --marca: #ff0000;
+    --azul: #60a5fa; --indigo: #818cf8; --cian: #06b6d4; --cielo: #38bdf8; --rosa: #ec4899;
+    --r-card: 24px; --r-kpi: 20px; --r-tile: 16px; --r-control: 14px;
+    --seda: cubic-bezier(0.32, 0.72, 0, 1);
+    --font: Geist, -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; scrollbar-width: none; }
+  *::-webkit-scrollbar { display: none; }
+  ::selection { background: rgba(10, 132, 255, 0.35); }
+  [hidden] { display: none !important; }
+  html { background: var(--bg); color: var(--ink); -webkit-text-size-adjust: 100%; }
+  body { margin: 0 auto; max-width: 1120px; padding: max(8px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 48px max(20px, env(safe-area-inset-left));
+    font: 400 15px/1.47 var(--font); letter-spacing: -0.009em; -webkit-font-smoothing: antialiased; }
+  p, li, dd { text-wrap: pretty; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; letter-spacing: inherit; -webkit-tap-highlight-color: transparent; }
+  button, .pulsable { transition: transform 0.12s var(--seda), background-color 0.16s, color 0.16s; }
+  button:active { transform: scale(0.97); }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .etiqueta { margin: 0; font-weight: 700; font-size: 11px; line-height: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+  .nota { margin: 4px 0 0; font-size: 12.5px; line-height: 17px; color: var(--ink-2); }
+  .num { font-variant-numeric: tabular-nums; }
+  .ud { margin-left: 0.18em; font-size: 0.34em; font-weight: 400; letter-spacing: 0; color: var(--ink-2); }
+  .delta { font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ink-3); }
+  .delta.up { color: var(--ok); } .delta.down { color: var(--warn); }
+
+  /* Entrada */
+  .entrar { display: grid; gap: 12px; max-width: 22rem; margin: 16vh auto 0; }
+  .entrar .marca { margin-bottom: 20px; }
+  .entrar label { font-size: 12.5px; color: var(--ink-2); }
+  .entrar input { font: inherit; font-size: 16px; padding: 14px 16px; border-radius: 16px; border: 0; background: var(--panel); color: var(--ink); }
+  .entrar input:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--ink); }
+  .entrar button { cursor: pointer; padding: 14px; border-radius: 18px; border: 0; background: var(--ink); color: #000; font-weight: 600; }
+  .entrar p { margin: 0; font-size: 12.5px; line-height: 17px; color: var(--ink-3); }
+  .entrar .error { color: var(--bad); }
+
+  /* Cabecera: el punto rojo de la marca, como la O de VISION, sin halo. */
+  .cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 12px 0 16px; }
+  .marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo { width: 12px; height: 12px; border-radius: 50%; background: var(--marca); flex: none; }
+  .marca h1 { margin: 0; font-weight: 600; font-size: 20px; line-height: 26px; letter-spacing: -0.02em; }
+  .marca p { margin: 0; font-size: 12.5px; line-height: 16px; color: var(--ink-2); }
+  .vivo { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--panel);
+    font-size: 12.5px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .punto { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-4); flex: none; }
+  .vivo.ok .punto { background: var(--marca); }
+  /* Un solo pulso al llegar los datos: nada se mueve solo más de 5 segundos. */
+  .vivo.ok .punto::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--marca); opacity: 0; animation: pulso 1.1s var(--seda) 0.3s; }
+  @keyframes pulso { from { transform: scale(1); opacity: 0.6; } to { transform: scale(2.6); opacity: 0; } }
+  .aviso { margin: 0 0 16px; padding: 14px 16px; border-radius: var(--r-kpi); background: color-mix(in srgb, var(--warn) 12%, var(--panel)); font-size: 13px; line-height: 18px; color: var(--ink); }
+
+  /* Tarjetas: relleno, sin borde ni sombra. */
+  .rejilla { display: grid; gap: 12px; }
+  .card { background: var(--panel); border-radius: var(--r-card); padding: 20px; min-width: 0; animation: entra 0.64s var(--seda) both; }
+  @keyframes entra { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+  .card h2 { margin: 0; font-weight: 600; font-size: 17px; line-height: 22px; letter-spacing: -0.015em; }
+  .seccion { margin-top: 32px; }
+  /* Secciones plegables: el título es un botón y, plegada, solo se ve el título. */
+  .plegar { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0 0 12px; padding: 4px 4px; border: 0; background: none; cursor: pointer; text-align: left; }
+  .plegar:active { transform: none; }
+  .plegar::after { content: ""; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform 0.2s var(--seda); }
+  .plegar[aria-expanded="false"]::after { transform: rotate(-45deg); }
+  @media not ((min-width: 900px) and (min-height: 500px) and (orientation: landscape) and (pointer: coarse)) { .seccion.plegada > :not(.plegar) { display: none; } }
+
+  /* Héroe: la semana. */
+  .heroe { display: grid; gap: 24px; }
+  .heroe-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .rango { margin: 0; font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .heroe .cifra { margin: 18px 0 6px; font-weight: 300; font-size: clamp(60px, 17vw, 84px); line-height: 1; letter-spacing: -0.045em; font-variant-numeric: tabular-nums; }
+  .heroe .nota { font-size: 13.5px; line-height: 19px; }
+  .comparas { margin: 20px 0 0; }
+  .comparas div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--sep); }
+  .comparas dt { font-size: 13px; line-height: 18px; color: var(--ink-2); }
+  .comparas dd { margin: 0; font-weight: 500; font-size: 14px; line-height: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .comparas dd .delta { margin-right: 10px; font-size: 12.5px; }
+  .meta { margin-top: 22px; }
+  .meta .barra { height: 6px; border-radius: 99px; background: var(--tile); overflow: hidden; }
+  .meta .barra i { display: block; height: 100%; border-radius: 99px; background: var(--ink); transition: width 0.9s var(--seda); }
+  .meta.lograda .barra i { background: var(--ok); }
+  .meta p { margin: 10px 0 0; font-size: 12.5px; line-height: 17px; color: var(--ink-2); }
+  .meta b { color: var(--ink); font-weight: 500; }
+
+  /* Cifras: el icono lleva el color de su función, nunca en una caja. */
+  .cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .kpi { background: var(--panel); border-radius: var(--r-kpi); padding: 18px 18px 16px; min-width: 0; }
+  .primera .kpi { animation: entra 0.64s var(--seda) both; animation-delay: calc(var(--i, 0) * 60ms + 120ms); }
+  .kpi .lbl { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 10px; line-height: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+  .kpi .lbl svg { width: 13px; height: 13px; flex: none; }
+  .kpi .val { display: block; margin: 14px 0 6px; font-weight: 300; font-size: clamp(28px, 7.4vw, 38px); line-height: 1.05; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kpi .sub { display: block; font-size: 12.5px; line-height: 17px; color: var(--ink-2); text-wrap: pretty; }
+  .c-ok { color: var(--ok); } .c-warn { color: var(--warn); } .c-bad { color: var(--bad); } .c-azul { color: var(--azul); }
+  .c-indigo { color: var(--indigo); } .c-cian { color: var(--cian); } .c-cielo { color: var(--cielo); } .c-rosa { color: var(--rosa); }
+
+  /* Gráficas: color plano, sin degradados; rejilla de separador y ejes en el gris terciario. */
+  .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; font-weight: 600; font-size: 11.5px; color: var(--ink-2); }
+  .card h2 + .leyenda, .card .nota + .leyenda { margin-top: 14px; }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .sw.v { background: var(--vinted); } .sw.w { background: var(--wallapop); }
+  .sw-linea { width: 14px; height: 0; border-top: 1.5px dashed var(--ink-2); display: inline-block; }
+  .grafica { width: 100%; margin-top: 10px; }
+  .grafica svg { display: block; overflow: visible; }
+  .grafica .grid { stroke: rgba(255, 255, 255, 0.06); stroke-width: 1; }
+  .grafica .base { stroke: rgba(255, 255, 255, 0.14); stroke-width: 1; }
+  .grafica .eje { fill: var(--ink-3); font-size: 10px; font-variant-numeric: tabular-nums; }
+  .grafica .eje.hoy { fill: var(--ink); font-weight: 700; }
+  .grafica .ref { stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .grafica .v { fill: var(--vinted); } .grafica .w { fill: var(--wallapop); }
+  .grafica .curso { opacity: 0.6; }
+  .grafica .hit { fill: transparent; cursor: pointer; }
+  .primera .grafica .col { transform-box: fill-box; transform-origin: bottom; animation: crece 0.7s var(--seda) both; animation-delay: calc(var(--i) * 35ms + 200ms); }
+  @keyframes crece { from { transform: scaleY(0); } }
+  .vacio { margin: 14px 0 0; padding: 28px 20px; border-radius: var(--r-tile); background: var(--tile); text-align: center; font-size: 13px; line-height: 18px; color: var(--ink-2); }
+  details.tabla-de { margin-top: 14px; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details.tabla-de > summary { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+  details > summary::after { content: ""; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform 0.2s var(--seda); }
+  details[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+  #tip { position: fixed; z-index: 10; pointer-events: none; max-width: 240px; padding: 10px 12px; border-radius: var(--r-control); background: var(--tile);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 48px rgba(0, 0, 0, 0.5); font-size: 12.5px; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; }
+  #tip b { font-weight: 600; } #tip .t { color: var(--ink-2); }
+
+  /* Listas: filas con separador fino entre ellas. */
+  .lista { list-style: none; margin: 8px 0 0; padding: 0; }
+  .lista li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 12px 0; }
+  .lista li + li { border-top: 1px solid var(--sep); }
+  .lista .tit { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; letter-spacing: -0.01em; }
+  .lista .det { grid-column: 1; font-size: 12.5px; line-height: 17px; color: var(--ink-2); }
+  .lista .der { grid-row: 1 / span 2; grid-column: 2; align-self: center; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .lista .der small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-3); }
+  .app { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; flex: none; }
+  .app.v { background: var(--vinted); } .app.w { background: var(--wallapop); }
+  .estado { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px 1px 6px; border-radius: 999px; font-weight: 600; font-size: 11.5px; line-height: 18px; white-space: nowrap; }
+  .estado svg { width: 12px; height: 12px; flex: none; }
+  .estado.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+  .estado.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 13%, transparent); }
+  .estado.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+  .urgente { color: var(--warn); font-weight: 600; }
+  .fases { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .fases div { border-radius: var(--r-tile); background: var(--tile); padding: 12px 14px; font-size: 12.5px; color: var(--ink-2); }
+  .fases b { display: block; margin-top: 6px; font-size: 28px; line-height: 1; font-weight: 300; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .fases .toca b { color: var(--warn); }
+  .grupo { display: flex; align-items: center; margin: 24px 0 0; font-weight: 700; font-size: 11px; line-height: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+  .grupo + .lista { margin-top: 4px; }
+
+  /* Tablas */
+  .herramientas { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+  .buscar { flex: 1 1 200px; min-width: 0; font: inherit; font-size: 16px; padding: 10px 14px; border-radius: var(--r-control); border: 0; background: var(--tile); color: var(--ink); }
+  .buscar::placeholder { color: var(--ink-3); }
+  .buscar:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--ink); }
+  .filtros { display: flex; gap: 2px; padding: 3px; border-radius: var(--r-control); background: var(--tile); }
+  .filtro { cursor: pointer; padding: 7px 13px; border-radius: 11px; border: 0; background: transparent; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+  .filtro[aria-pressed="true"] { background: var(--activo); color: var(--ink); font-weight: 600; }
+  .envoltura { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-weight: 700; font-size: 11px; line-height: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); padding: 12px 10px; white-space: nowrap; }
+  th:first-child, td:first-child { padding-left: 0; } th:last-child, td:last-child { padding-right: 0; }
+  th button { all: unset; cursor: pointer; }
+  th[aria-sort] { color: var(--ink); }
+  th[aria-sort] button::after { content: " ↓"; } th[aria-sort="ascending"] button::after { content: " ↑"; }
+  td { padding: 12px 10px; border-top: 1px solid var(--sep); vertical-align: top; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* La cabecera alineada a la derecha descuenta su propio espaciado final. */
+  th.n { padding-right: calc(10px - 0.14em); } th.n:last-child { padding-right: 0; margin-right: -0.14em; }
+  td.art { max-width: 340px; }
+  td.art a, td.art > .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; }
+  td .marca-estado { display: inline-block; margin: 4px 8px 0 0; font-size: 11.5px; color: var(--ink-3); }
+  tr.cero td.vis { color: var(--warn); }
+  .mas { display: block; width: 100%; margin-top: 12px; padding: 12px; border-radius: var(--r-control); border: 0; background: var(--tile); color: var(--ink); cursor: pointer; font-size: 13.5px; font-weight: 600; }
+
+  .defs { margin: 12px 0 0; padding-left: 18px; font-size: 13px; line-height: 19px; color: var(--ink-2); }
+  .defs li { margin: 8px 0; }
+  .defs-card > summary { display: flex; align-items: center; gap: 8px; }
+  .seccion.primera-de-vista { margin-top: 8px; }
+
+  /* Barra de pestañas fija abajo. El cristal solo va en lo fijo, nunca en lo que se desplaza. */
+  #panel { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .pestanas { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr);
+    padding: 0 max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
+    background: rgba(0, 0, 0, 0.78); -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8); border-top: 1px solid var(--sep); }
+  .pestanas button { position: relative; display: grid; place-items: center; height: 56px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink-3); }
+  .pestanas button:active { transform: scale(0.92); }
+  .pestanas svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke-width 0.16s; }
+  .pestanas [aria-current="page"] { color: var(--ink); }
+  .pestanas [aria-current="page"] svg { stroke-width: 2.4; }
+  .pestanas :focus-visible { outline-offset: -6px; border-radius: 14px; }
+  .pestanas .rotulo { display: none; }
+  /* Pedidos por enviar: el rojo de la marca como señal de lo que toca hacer. */
+  .globo { position: absolute; top: 8px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 5px; border-radius: 99px; background: var(--marca);
+    box-shadow: 0 0 0 2px #000; color: #fff; font-weight: 700; font-size: 10.5px; line-height: 17px; text-align: center; letter-spacing: 0; }
+  footer { margin-top: 40px; padding-left: 0.3em; text-align: center; font-weight: 700; font-size: 9.5px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-3); }
+
+  @media (hover: hover) {
+    .plegar:hover, details.tabla-de > summary:hover { color: var(--ink); }
+    .grafica .hit:hover { fill: rgba(255, 255, 255, 0.04); }
+    .lista a:hover, td.art a:hover { color: #fff; text-decoration: underline; text-decoration-color: var(--ink-4); text-underline-offset: 3px; }
+    tbody tr:hover td { background: var(--hover); }
+    .filtro:hover:not([aria-pressed="true"]) { color: var(--ink); }
+    .mas:hover { background: var(--tile-2); }
+    .entrar button:hover { background: #fff; }
+  }
+  @media (max-width: 560px) { .estrecho-no { display: none; } }
+  @media (min-width: 760px) {
+    body { padding-top: max(20px, env(safe-area-inset-top)); }
+    .cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .dos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card { padding: 24px; }
+    .kpi { padding: 20px 22px 18px; }
+    .kpi .val { font-size: 36px; }
+    .envoltura { margin: 0 -24px; padding: 0 24px; }
+    /* En una pantalla mediana (tablet en vertical) la barra flota centrada, como la cabecera en píldora de la web de VISION. */
+    #panel { padding-bottom: 104px; }
+    .pestanas { left: 0; right: 0; bottom: max(20px, env(safe-area-inset-bottom)); width: 340px; margin: 0 auto; padding: 0 8px; border: 0; border-radius: 999px;
+      background: rgba(20, 20, 22, 0.8); box-shadow: 0 0 0 1px var(--sep), 0 18px 50px -24px #000; }
+    .pestanas button { height: 54px; }
+  }
+  @media (min-width: 960px) {
+    .heroe { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 40px; padding: 28px; }
+    .heroe-graf { display: flex; flex-direction: column; justify-content: flex-end; }
+  }
+  /* Ordenador y tablet en horizontal: las pestañas pasan a una columna fija a la izquierda, con su nombre, junto a la marca
+     arriba y el estado de la lectura abajo. Así la barra no tapa nada y en la tablet queda toda la altura para los datos. */
+  @media (min-width: 900px) {
+    :root { --lado: 216px; }
+    body { max-width: none; padding: 24px 32px 0 calc(var(--lado) + max(32px, env(safe-area-inset-left))); }
+    #panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; align-items: start; max-width: 1180px; margin: 0 auto; padding-bottom: 40px; }
+    #panel > * { grid-column: 1 / -1; }
+    .cab { position: fixed; z-index: 4; top: 0; bottom: 0; left: 0; width: calc(var(--lado) + env(safe-area-inset-left)); flex-direction: column; align-items: flex-start; justify-content: space-between;
+      padding: 28px 20px 24px max(28px, env(safe-area-inset-left)); }
+    .vivo { white-space: normal; border-radius: var(--r-control); }
+    .pestanas { top: 96px; bottom: auto; right: auto; width: calc(var(--lado) + env(safe-area-inset-left)); margin: 0; display: flex; flex-direction: column; gap: 4px;
+      padding: 0 12px 0 max(12px, env(safe-area-inset-left)); border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .pestanas button { display: flex; align-items: center; gap: 14px; height: 48px; padding: 0 14px; border-radius: var(--r-control); text-align: left; }
+    .pestanas button:active { transform: scale(0.97); }
+    .pestanas svg { width: 22px; height: 22px; }
+    .pestanas .rotulo { display: inline; font-size: 15px; font-weight: 500; }
+    .pestanas [aria-current="page"] { background: var(--activo); }
+    .pestanas [aria-current="page"] .rotulo { font-weight: 600; }
+    .pestanas :focus-visible { outline-offset: -2px; }
+    .globo { position: static; margin-left: auto; box-shadow: none; }
+    .heroe { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 32px; padding: 28px; }
+    .heroe-graf { display: flex; flex-direction: column; justify-content: flex-end; }
+    /* La tabla de anuncios cabe entera: su cabecera se queda arriba al bajar por todos los anuncios. */
+    #t-anuncios th { position: sticky; z-index: 1; top: 0; background: var(--panel); }
+    .card:has(#t-anuncios) .envoltura { overflow: visible; }
+  }
+  @media (min-width: 900px) and (hover: hover) {
+    .pestanas button:hover:not([aria-current="page"]) { background: var(--hover); color: var(--ink); }
+  }
+  /* Con anchura de sobra, los pedidos por hacer y las últimas ventas van uno al lado del otro. */
+  @media (min-width: 1200px) {
+    #panel > [data-sec="curso"], #panel > [data-sec="ventas"] { grid-column: auto; }
+    #panel > [data-sec="ventas"] { margin-top: 8px; }
+    .heroe { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 40px; }
+  }
+  /* Tablet en horizontal: nada se desplaza. Cada pestaña cabe en la pantalla, centrada en alto, y las listas largas van por
+     páginas que se pasan deslizando o con las flechas (paginar()). Las tablas desplegables se abren en una hoja encima. */
+  @media (min-width: 900px) and (min-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+    html, body { height: 100%; overflow: hidden; }
+    body { padding-top: 24px; padding-bottom: 24px; }
+    #panel { height: 100%; padding-bottom: 0; align-content: center; }
+    footer { display: none; }
+    .seccion { margin-top: 24px; }
+    .seccion.primera-de-vista { margin-top: 0; }
+    /* Sin rótulos encima de las tarjetas, que ya llevan su título: más sitio para los datos. Solo queda el del mes en Inicio. */
+    #panel:not([data-vista="inicio"]) .seccion > .plegar { display: none; }
+    .plegar { pointer-events: none; }
+    .plegar::after { display: none; }
+    .envoltura { overflow: visible; }
+    /* Ventas y Anuncios llenan la altura: la tarjeta crece hasta abajo y la lista se reparte en páginas. */
+    /* El aviso, si lo hay, va siempre en la primera fila; sin él, esa fila no ocupa nada. */
+    #panel > .aviso { grid-row: 1; }
+    #panel[data-vista="ventas"], #panel[data-vista="anuncios"] { grid-template-rows: auto minmax(0, 1fr); align-content: stretch; align-items: stretch; }
+    #panel[data-vista="ventas"] > .seccion, #panel[data-vista="anuncios"] > .seccion { grid-row: 2; }
+    #panel[data-vista="ventas"] > [data-sec="curso"], #panel[data-vista="ventas"] > [data-sec="ventas"] { grid-column: auto; margin-top: 0; }
+    #panel[data-vista="ventas"] > .seccion, #panel[data-vista="anuncios"] > .seccion { display: flex; flex-direction: column; min-height: 0; }
+    .hojeable { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; touch-action: pan-y; }
+    /* Escaparate: las cifras arriba y debajo tres columnas, los que más gustan, los que nadie ve y las dos gráficas. */
+    #panel[data-vista="escaparate"] { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto minmax(0, 1fr); align-content: stretch; align-items: stretch; }
+    #panel[data-vista="escaparate"] > [data-sec="escaparate"], #panel[data-vista="escaparate"] > [data-sec="escaparate"] > .rejilla { display: contents; }
+    #panel[data-vista="escaparate"] [data-sec="escaparate"] > .plegar { grid-column: 1 / -1; grid-row: 2; }
+    #cifras-escaparate { grid-column: 1 / -1; grid-row: 3; }
+    #panel[data-vista="escaparate"] [data-sec="escaparate"] .card { grid-row: 4; margin-top: 12px; }
+    #panel[data-vista="escaparate"] > [data-sec="visitas"] { grid-column: 3; grid-row: 4; margin-top: 12px; min-height: 0; }
+    #panel[data-vista="escaparate"] > [data-sec="visitas"] > .plegar { display: none; }
+    #panel[data-vista="escaparate"] > [data-sec="visitas"] > .rejilla { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+    [data-sec="visitas"] .card { display: flex; flex-direction: column; min-height: 0; padding: 18px 20px; overflow: hidden; }
+    /* Dinero llena la pantalla: la gráfica crece y «Cómo se cuenta» queda debajo. */
+    #panel[data-vista="dinero"] { grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; align-items: stretch; }
+    #panel[data-vista="dinero"] > [data-sec="dinero"] { grid-row: 2; display: flex; flex-direction: column; min-height: 0; }
+    #panel[data-vista="dinero"] > [data-sec="dinero"] > .card { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    #panel[data-vista="dinero"] > .seccion:not([data-sec]) { grid-row: 3; margin-top: 12px; }
+    [data-sec="dinero"] .grafica, [data-sec="visitas"] .grafica { flex: 1 1 0; min-height: 0; }
+    /* Los cuatro contadores de pedidos en una línea cada uno: la cifra a la derecha. */
+    .hojeable .fases div { display: flex; align-items: center; padding: 10px 14px; }
+    .hojeable .fases b { margin: 0 0 0 auto; padding-left: 8px; font-size: 22px; }
+    /* Filas de anuncios en una línea: el título cortado y la REF al lado, para que quepan más por página. */
+    #t-anuncios td.art a, #t-anuncios td.art > .t { display: inline; }
+    #t-anuncios td.art { max-width: 0; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #t-anuncios td.art .marca-estado { margin: 0 0 0 8px; }
+    #t-anuncios td { padding-top: 11px; padding-bottom: 11px; }
+    #ventas-mas { display: none; }
+    .paginas { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: auto; padding-top: 6px; }
+    .paginas button { width: 44px; height: 36px; border: 0; border-radius: var(--r-control); background: var(--tile); cursor: pointer; font-size: 18px; line-height: 1; color: var(--ink); }
+    .paginas button:disabled { opacity: 0.3; cursor: default; }
+    .paginas span { min-width: 64px; text-align: center; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    .hojeable .oculta { display: none !important; }
+    .hojeable .lista li { padding: 10px 0; }
+    .hojeable .lista li.arriba { border-top: 0; }
+    .hojeable .grupo.arriba { margin-top: 12px; }
+    /* Lo que se despliega sale en una hoja centrada encima de todo, que se cierra tocando fuera o en «Cerrar». */
+    .hoja { width: min(760px, 88vw); max-height: 92dvh; padding: 24px; border: 0; border-radius: var(--r-card); background: var(--panel); color: var(--ink); overflow: hidden; }
+    .hoja::backdrop { background: rgba(0, 0, 0, 0.7); }
+    .hoja h2 { margin: 0 0 8px; font-weight: 600; font-size: 17px; line-height: 22px; }
+    .hoja .mas { margin-top: 16px; }
+    .hoja th, .hoja td { padding-top: 8px; padding-bottom: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<form class="entrar" id="entrar" hidden>
+  <div class="marca"><i class="logo" aria-hidden="true"></i><div><h1>Venta Online</h1><p>Vinted · Wallapop</p></div></div>
+  <label for="clave">Clave del panel</label>
+  <input id="clave" name="clave" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Pega aquí la clave" required>
+  <button type="submit">Entrar</button>
+  <p class="error" id="entrar-error" hidden></p>
+  <p>Es la variable <code>CLAVE_PANEL</code> que pusiste en Vercel. Se escribe una vez en cada móvil u ordenador.</p>
+</form>
+
+<main id="panel" hidden>
+  <header class="cab">
+    <div class="marca"><i class="logo" aria-hidden="true"></i><div><h1>Venta Online</h1><p>Vinted · Wallapop</p></div></div>
+    <span class="vivo" id="vivo"><span class="punto"></span><span id="vivo-t">—</span></span>
+  </header>
+  <p class="aviso" id="aviso" hidden></p>
+
+  <section class="card heroe" data-en="inicio" aria-labelledby="semana-t">
+    <div>
+      <div class="heroe-cab"><p class="etiqueta" id="semana-t">Esta semana</p><p class="rango" id="semana-rango"></p></div>
+      <p class="cifra" id="semana-cifra" data-fmt="cifra">—</p>
+      <p class="nota" id="semana-sub">—</p>
+      <dl class="comparas" id="semana-comparas"></dl>
+      <div class="meta" id="semana-meta"><div class="barra"><i style="width:0"></i></div><p></p></div>
+    </div>
+    <div class="heroe-graf">
+      <div class="leyenda" aria-hidden="true"><span><i class="sw v"></i>Vinted</span><span><i class="sw w"></i>Wallapop</span><span><i class="sw-linea"></i>Media de 4 semanas</span></div>
+      <div class="grafica" id="g-semanas"></div>
+      <details class="tabla-de"><summary>Ver las semanas en tabla</summary><div class="envoltura"><table id="t-semanas"></table></div></details>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="mes" data-en="inicio">
+    <button class="etiqueta plegar" id="mes-t" aria-expanded="true">Este mes</button>
+    <div class="cifras" id="cifras-mes"></div>
+  </section>
+
+  <section class="seccion" data-sec="curso" data-en="ventas">
+    <button class="etiqueta plegar" aria-expanded="true">Por hacer</button>
+    <div class="card hojeable">
+      <h2 id="curso-t">Pedidos en curso</h2>
+      <p class="nota">Vendidos y pagados, pero aún sin cerrar. En Vinted hay 5 días para enviar.</p>
+      <div id="curso"></div>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="escaparate" data-en="escaparate">
+    <button class="etiqueta plegar" aria-expanded="true">Escaparate</button>
+    <div class="cifras" id="cifras-escaparate"></div>
+    <div class="rejilla dos" style="margin-top:12px">
+      <div class="card hojeable">
+        <h2>Los que más gustan</h2>
+        <p class="nota">Más favoritos: es gente que se lo está pensando. Una rebaja pequeña les llega como aviso.</p>
+        <ul class="lista" id="calientes"></ul>
+      </div>
+      <div class="card hojeable">
+        <h2>Los que nadie ve</h2>
+        <p class="nota" id="dormidos-nota">Sin visitas en la última semana: candidatos a subir de nuevo desde cero.</p>
+        <ul class="lista" id="dormidos"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="visitas" data-en="escaparate">
+    <button class="etiqueta plegar" aria-expanded="true">Quién mira</button>
+    <div class="rejilla dos">
+      <div class="card">
+        <h2>Visitas nuevas por día</h2>
+        <div class="leyenda" aria-hidden="true"><span><i class="sw v"></i>Vinted</span><span><i class="sw w"></i>Wallapop</span></div>
+        <div class="grafica" id="g-visitas"></div>
+      </div>
+      <div class="card">
+        <h2>Favoritos nuevos por día</h2>
+        <div class="leyenda" aria-hidden="true"><span><i class="sw v"></i>Vinted</span><span><i class="sw w"></i>Wallapop</span></div>
+        <div class="grafica" id="g-favoritos"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="dinero" data-en="dinero">
+    <button class="etiqueta plegar" aria-expanded="true">Dinero</button>
+    <div class="card">
+      <h2>Cobrado por mes</h2>
+      <p class="nota">Solo pedidos cerrados: el dinero que ya es tuyo. Últimos 12 meses.</p>
+      <div class="leyenda" aria-hidden="true"><span><i class="sw v"></i>Vinted</span><span><i class="sw w"></i>Wallapop</span></div>
+      <div class="grafica" id="g-meses"></div>
+      <details class="tabla-de"><summary>Ver mes a mes en tabla</summary><div class="envoltura"><table id="t-meses"></table></div></details>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="anuncios" data-en="anuncios">
+    <button class="etiqueta plegar" aria-expanded="true">Anuncios</button>
+    <div class="card hojeable">
+      <h2 id="anuncios-t">Todos tus anuncios</h2>
+      <div class="herramientas">
+        <input class="buscar" id="buscar" type="search" placeholder="Buscar anuncio o REF" aria-label="Buscar anuncio o REF">
+        <div class="filtros" role="group" aria-label="App">
+          <button class="filtro" data-app="" aria-pressed="true">Todas</button>
+          <button class="filtro" data-app="Vinted" aria-pressed="false">Vinted</button>
+          <button class="filtro" data-app="Wallapop" aria-pressed="false">Wallapop</button>
+        </div>
+      </div>
+      <div class="envoltura"><table id="t-anuncios"></table></div>
+    </div>
+  </section>
+
+  <section class="seccion" data-sec="ventas" data-en="ventas">
+    <button class="etiqueta plegar" aria-expanded="true">Ventas</button>
+    <div class="card hojeable">
+      <h2>Últimas ventas</h2>
+      <ul class="lista" id="ventas"></ul>
+      <button class="mas" id="ventas-mas" hidden>Ver más</button>
+    </div>
+  </section>
+
+  <section class="seccion" data-en="dinero">
+    <details class="card defs-card">
+      <summary class="etiqueta">Cómo se cuenta</summary>
+      <ul class="defs">
+        <li>Vendido: todo lo que se ha comprado y no se ha cancelado, cobrado o aún en curso, por la fecha del pedido. Las semanas van de lunes a domingo, como el resumen de los lunes.</li>
+        <li>Cobrado: Vinted "Pedido finalizado", Wallapop "Transacción completada" o vendido en mano. Es el importe del artículo: ni Vinted ni Wallapop cobran comisión al vendedor; el envío y la protección los paga el comprador.</li>
+        <li>Pendiente: pagado por el comprador, aún sin cerrar. Perdido: cancelado, reembolsado o devuelto.</li>
+        <li>Productos y valor del escaparate: cada producto cuenta una vez aunque esté en Vinted y en Wallapop. Los anuncios se unen por la REF de la descripción y el producto vale el precio más bajo de sus anuncios. Los reservados u ocultos (vendidos en la otra app, esperando a cerrar) no cuentan. Tampoco los anuncios sin REF en la descripción, como el de diseño web: no son productos.</li>
+        <li>7 días: lo que han subido las visitas de cada anuncio en la última semana. Sale en cuanto hay una semana de lecturas.</li>
+        <li>Visitas y favoritos: la extensión «Lector de ventas» los anota cada 30 minutos. Lo nuevo de un día es lo que ha subido cada anuncio desde el día anterior, así que el de hoy va a medias. Se guardan desde el 26-10-2026.</li>
+        <li>Ventas en mano de Wallapop: precio del anuncio y día en que se marcó como vendido. Claude las apunta los lunes.</li>
+      </ul>
+    </details>
+  </section>
+  <footer>Vinted · Wallapop</footer>
+  <!-- Barra de abajo, como la de X o Instagram: una pestaña por sección. Trazos de Lucide. -->
+  <nav class="pestanas" aria-label="Secciones">
+    <button data-vista="inicio" aria-label="Inicio" title="Inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="rotulo">Inicio</span></button>
+    <button data-vista="ventas" aria-label="Pedidos y ventas" title="Pedidos y ventas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="rotulo">Ventas</span><b class="globo num" id="globo-ventas" hidden></b></button>
+    <button data-vista="escaparate" aria-label="Escaparate" title="Escaparate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg><span class="rotulo">Escaparate</span></button>
+    <button data-vista="anuncios" aria-label="Anuncios" title="Anuncios"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg><span class="rotulo">Anuncios</span></button>
+    <button data-vista="dinero" aria-label="Dinero" title="Dinero"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span class="rotulo">Dinero</span></button>
+  </nav>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const eur = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const eur0 = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  const num = new Intl.NumberFormat('es-ES');
+  const pct = new Intl.NumberFormat('es-ES', { style: 'percent', maximumFractionDigits: 0 });
+  const fDia = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const fDiaSem = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', timeZone: 'UTC' });
+  const fMes = new Intl.DateTimeFormat('es-ES', { month: 'short', timeZone: 'UTC' });
+  const fMesLargo = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const fHora = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
+  const fCuando = new Intl.DateTimeFormat('es-ES', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const utc = (s) => new Date(s + 'T00:00:00Z');
+  const sumar = (s, n) => new Date(utc(s).getTime() + n * 864e5).toISOString().slice(0, 10);
+  const lunes = (s) => sumar(s, -((utc(s).getUTCDay() + 6) % 7));
+  const hoyMadrid = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date());
+  const diasEntre = (a, b) => Math.round((utc(b) - utc(a)) / 864e5);
+  const suma = (filas, f = (x) => x.importe) => filas.reduce((s, x) => s + f(x), 0);
+  const corta = (k) => (k === 'Vinted' ? 'v' : 'w');
+  const mesDe = (s) => s.slice(0, 7);
+  const mesAntes = (m) => { const [a, n] = m.split('-').map(Number); return n === 1 ? `${a - 1}-12` : `${a}-${String(n - 1).padStart(2, '0')}`; };
+  const mayus = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const ICONO = {
+    ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    bad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  };
+  // Iconos de las cifras (trazos de Lucide, como en VISION), cada uno con el color de su función.
+  const trazo = (d, color) => `<svg class="${color}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const SIMBOLO = {
+    cobrado: trazo('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>', 'c-ok'),
+    ventas: trazo('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'c-azul'),
+    pendiente: trazo('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', 'c-warn'),
+    perdido: trazo('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>', 'c-bad'),
+    productos: trazo('<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>', 'c-indigo'),
+    valor: trazo('<path d="M4 10h12M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>', 'c-cian'),
+    visitas: trazo('<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>', 'c-cielo'),
+    favoritos: trazo('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>', 'c-rosa'),
+  };
+  const ESTADO = { Cobrado: 'ok', Pendiente: 'warn', Perdido: 'bad' };
+  const chipEstado = (texto, tipo) => `<span class="estado ${tipo}">${ICONO[tipo]}${esc(texto)}</span>`;
+  // Como en VISION: ▲ verde si mejora, ▼ ámbar si empeora (nunca rojo), «=» gris si no cambia. fmt recibe el valor absoluto.
+  const delta = (d, fmt, subirEsBueno = true) => d == null ? '<span class="delta">—</span>' : Math.abs(d) < 0.005 ? '<span class="delta">= igual</span>'
+    : `<span class="delta ${(d > 0) === subirEsBueno ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${fmt(Math.abs(d))}</span>`;
+  // Euros con la unidad pequeña y gris en la misma línea base; sin ",00" en las cifras grandes.
+  const dec = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const cifraEur = (v, sinCeros = true) => `${(sinCeros ? dec.format(v).replace(/,00$/, '') : dec.format(v))}<span class="ud">€</span>`;
+  const FMT = { cifra: (v) => cifraEur(v), eur: (v) => cifraEur(v, false), eur0: (v) => `${num.format(Math.round(v))}<span class="ud">€</span>`, num: (v) => num.format(Math.round(v)) };
+  const enlace = (a) => a.url || (a.clave?.startsWith('V') ? `https://www.vinted.es/items/${a.clave.slice(1)}` : null);
+
+  // ---------- Gráfica de barras apiladas (Vinted abajo, Wallapop encima) ----------
+  const paso = (max) => { const bruto = max / 3, p = 10 ** Math.floor(Math.log10(bruto)), n = bruto / p; return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p); };
+  const tapa = (x, y, w, h, r) => {
+    r = Math.min(r, w / 2, h);
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  };
+  function barras(el, filas, { etiqueta, tip, fmtEje, referencia, enCurso, alto = 190, nombre }) {
+    // En la tablet, las gráficas que crecen con su tarjeta (flex) toman la altura del hueco que les queda.
+    const llena = fija.matches && getComputedStyle(el).flexGrow === '1' && el.clientHeight > 80;
+    const W = Math.max(260, el.clientWidth), H = llena ? el.clientHeight : alto, m = { t: 14, r: 6, b: 24, l: 40 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const total = (f) => (f.Vinted || 0) + (f.Wallapop || 0);
+    const max = Math.max(...filas.map(total), referencia?.valor || 0, 1);
+    const p = paso(max), techo = Math.ceil(max / p) * p;
+    const y = (v) => m.t + ph - (v / techo) * ph;
+    const bw = pw / filas.length, ancho = Math.max(4, Math.min(30, bw * 0.6));
+    const cada = Math.max(1, Math.ceil(filas.length / Math.max(1, Math.floor(pw / 46))));
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(nombre)}">`;
+    for (let t = 0; t <= techo + 1e-9; t += p) {
+      s += `<line class="${t ? 'grid' : 'base'}" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/>`;
+      s += `<text class="eje" x="${m.l - 8}" y="${y(t) + 3.5}" text-anchor="end">${esc(fmtEje(t))}</text>`;
+    }
+    filas.forEach((f, i) => {
+      const x = m.l + bw * i + (bw - ancho) / 2, curso = enCurso?.(f) ? ' curso' : '';
+      let base = 0;
+      const partes = ['Vinted', 'Wallapop'].filter((k) => f[k] > 0);
+      s += `<g class="col" style="--i:${i}">`;
+      partes.forEach((k, j) => {
+        const v = f[k], arriba = y(base + v), abajo = y(base) - (j ? 2 : 0), h = Math.max(0, abajo - arriba);
+        if (h > 0.5) s += j === partes.length - 1 ? `<path class="${corta(k)}${curso}" d="${tapa(x, arriba, ancho, h, 6)}"/>`
+          : `<rect class="${corta(k)}${curso}" x="${x}" y="${arriba}" width="${ancho}" height="${h}"/>`;
+        base += v;
+      });
+      s += '</g>';
+      s += `<rect class="hit" x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${ph}" data-tip="${esc(tip(f))}"/>`;
+      if (i % cada === (filas.length - 1) % cada) s += `<text class="eje${curso ? ' hoy' : ''}" x="${m.l + bw * i + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(etiqueta(f))}</text>`;
+    });
+    if (referencia?.valor > 0) {
+      const yr = y(referencia.valor);
+      s += `<line class="ref" x1="${m.l}" x2="${W - m.r}" y1="${yr}" y2="${yr}"/>`;
+    }
+    el.innerHTML = s + '</svg>';
+  }
+
+  // ---------- Cálculos ----------
+  function calcular({ ventas, diario, anuncios }) {
+    const hoy = hoyMadrid();
+    const vivas = ventas.filter((v) => v.estado !== 'Perdido');
+    // Semanas de lunes a domingo, como ventas/semanal.py: lo vendido sin cancelar, por fecha de pedido.
+    const lun = lunes(hoy), llevamos = diasEntre(lun, hoy);
+    const semanas = Array.from({ length: 12 }, (_, i) => ({ semana: sumar(lun, -7 * (11 - i)), Vinted: 0, Wallapop: 0, n: 0 }));
+    const sem = Object.fromEntries(semanas.map((s) => [s.semana, s]));
+    for (const v of vivas) { const s = sem[lunes(v.fecha)]; if (s) { s[v.app] += v.importe; s.n += 1; } }
+    const tot = (s) => s.Vinted + s.Wallapop;
+    const esta = sem[lun], anterior = sem[sumar(lun, -7)];
+    const anteriorAlturas = suma(vivas.filter((v) => v.fecha >= anterior.semana && v.fecha <= sumar(anterior.semana, llevamos)));
+    const completas = semanas.slice(-5, -1).map(tot), media4 = completas.reduce((a, b) => a + b, 0) / 4;
+
+    // Este mes frente a los mismos días del anterior.
+    const mes = mesDe(hoy), mesAnt = mesAntes(mes), dia = Number(hoy.slice(8));
+    const enMes = (v, mm) => mesDe(v.fecha) === mm && Number(v.fecha.slice(8)) <= dia;
+    const delMes = (mm, estado) => ventas.filter((v) => enMes(v, mm) && (!estado || v.estado === estado));
+    const pendientes = ventas.filter((v) => v.estado === 'Pendiente').sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+
+    // Meses: los 12 últimos.
+    const meses = [];
+    for (let k = mes, i = 0; i < 12; i++, k = mesAntes(k)) meses.unshift({ mes: k, Vinted: 0, Wallapop: 0, cobrado: 0, pendiente: 0, perdido: 0, pedidos: 0, perdidos: 0 });
+    const mm = Object.fromEntries(meses.map((r) => [r.mes, r]));
+    for (const v of ventas) {
+      const r = mm[mesDe(v.fecha)]; if (!r) continue;
+      r.pedidos += 1;
+      if (v.estado === 'Cobrado') { r.cobrado += v.importe; r[v.app] += v.importe; }
+      if (v.estado === 'Pendiente') r.pendiente += v.importe;
+      if (v.estado === 'Perdido') { r.perdido += v.importe; r.perdidos += 1; }
+    }
+
+    // Visitas y favoritos nuevos de cada día (null: esa app no se leyó ese día).
+    const dias = {};
+    for (const r of diario) {
+      if (r.visitas_nuevas == null) continue;
+      const d = (dias[r.fecha] ??= { fecha: r.fecha, visitas: { Vinted: null, Wallapop: null }, favoritos: { Vinted: null, Wallapop: null } });
+      d.visitas[r.app] = r.visitas_nuevas; d.favoritos[r.app] = r.favoritos_nuevos;
+    }
+    const porDia = Object.values(dias).sort((a, b) => (a.fecha < b.fecha ? -1 : 1)).slice(-30);
+    const ultimoDia = porDia.at(-1);
+
+    // Escaparate. Un producto suele estar en las dos apps: sus anuncios llevan la misma REF y cuenta una vez,
+    // al precio más bajo. Si uno de sus anuncios está reservado u oculto, se ha vendido y no está a la venta.
+    // Un anuncio sin REF en la descripción no es un producto del sistema (el de diseño web) y no cuenta.
+    const grupos = new Map();
+    for (const a of anuncios) {
+      if (!a.ref) continue;
+      if (!grupos.has(a.ref)) grupos.set(a.ref, []);
+      grupos.get(a.ref).push(a);
+    }
+    const sinRef = anuncios.filter((a) => a.ref === null).length;
+    const productos = [...grupos.values()].map((ans) => ({
+      apps: new Set(ans.map((a) => a.app)), precio: Math.min(...ans.map((a) => a.precio)), aLaVenta: ans.every((a) => a.estado === 'activo'),
+    }));
+    const enVenta = productos.filter((p) => p.aLaVenta), bloqueados = productos.length - enVenta.length;
+    const refsPorLeer = anuncios.filter((a) => a.ref === undefined).length; // la extensión aún no ha mirado su REF
+    const hay7d = anuncios.some((a) => a.visitas_7d != null);
+    const calientes = anuncios.filter((a) => a.estado === 'activo' && a.favoritos > 0).sort((a, b) => b.favoritos - a.favoritos || b.visitas - a.visitas).slice(0, 6);
+    const dormidos = anuncios.filter((a) => a.estado === 'activo' && (hay7d ? a.visitas_7d === 0 : (a.dias ?? 0) >= 7 && a.visitas / Math.max(1, a.dias) < 0.5))
+      .sort((a, b) => (b.dias ?? 0) - (a.dias ?? 0));
+    return { hoy, lun, llevamos, semanas, esta, anterior, anteriorAlturas, media4, tot, mes, mesAnt, dia, delMes, pendientes, meses, porDia, ultimoDia, enVenta, bloqueados, sinRef, refsPorLeer, hay7d, calientes, dormidos };
+  }
+
+  // ---------- Pintar ----------
+  let datos = null, c = null, orden = { campo: 'visitas', asc: true }, filtroApp = '', verVentas = 15;
+
+  function pintar() {
+    if (!datos) return;
+    c = calcular(datos);
+    const { semanas, esta, anterior, anteriorAlturas, media4, tot } = c;
+
+    // Esta semana.
+    const vendido = tot(esta);
+    $('#semana-rango').textContent = `${fDia.format(utc(c.lun))} – ${fDia.format(utc(sumar(c.lun, 6)))}`.replace(/\./g, '');
+    $('#semana-cifra').dataset.v = vendido;
+    $('#semana-cifra').innerHTML = FMT.cifra(vendido);
+    $('#semana-sub').textContent = `Vendido en ${esta.n} ${esta.n === 1 ? 'venta' : 'ventas'}` + (esta.n ? ` · ${eur.format(vendido / esta.n)} de media` : '');
+    const dAlt = vendido - anteriorAlturas;
+    $('#semana-comparas').innerHTML =
+      `<div><dt>Semana pasada a estas alturas</dt><dd>${delta(dAlt, (d) => eur.format(d))}${eur.format(anteriorAlturas)}</dd></div>` +
+      `<div><dt>Media de las 4 últimas</dt><dd>${eur.format(media4)}</dd></div>`;
+    const objetivo = tot(anterior), meta = $('#semana-meta');
+    const avance = objetivo > 0 ? vendido / objetivo : vendido > 0 ? 1 : 0;
+    meta.classList.toggle('lograda', objetivo > 0 && vendido >= objetivo);
+    meta.querySelector('i').style.width = `${Math.min(100, avance * 100)}%`;
+    meta.querySelector('p').innerHTML = objetivo > 0
+      ? (vendido >= objetivo ? `Ya has superado la semana pasada (${eur.format(objetivo)}).` : `Te faltan <b>${eur.format(objetivo - vendido)}</b> para superar la semana pasada (${eur.format(objetivo)}).`)
+      : 'La semana pasada no hubo ventas: cualquier venta ya la supera.';
+    barras($('#g-semanas'), semanas, {
+      nombre: 'Vendido por semana, últimas 12 semanas',
+      etiqueta: (f) => fDia.format(utc(f.semana)).replace('.', ''),
+      fmtEje: (v) => eur0.format(v),
+      enCurso: (f) => f.semana === c.lun,
+      referencia: { valor: media4 },
+      tip: (f) => `<b>Semana del ${fDia.format(utc(f.semana))}</b>${f.semana === c.lun ? ' (en curso)' : ''}<br>${eur.format(tot(f))} · ${f.n} ${f.n === 1 ? 'venta' : 'ventas'}<br><span class="t">Vinted ${eur.format(f.Vinted)} · Wallapop ${eur.format(f.Wallapop)}</span>`,
+    });
+    $('#t-semanas').innerHTML = '<thead><tr><th>Semana</th><th class="n">Vendido</th><th class="n">Vinted</th><th class="n">Wallapop</th><th class="n">Ventas</th></tr></thead><tbody>' +
+      semanas.slice().reverse().map((f) => `<tr><td>${esc(fDia.format(utc(f.semana)))}</td><td class="n">${eur.format(tot(f))}</td><td class="n">${eur.format(f.Vinted)}</td><td class="n">${eur.format(f.Wallapop)}</td><td class="n">${f.n}</td></tr>`).join('') + '</tbody>';
+
+    // Este mes.
+    $('#mes-t').textContent = `${mayus(fMesLargo.format(utc(c.mes + '-01')).replace(/ de \d+$/, ''))}, hasta el día ${c.dia}`;
+    const cob = suma(c.delMes(c.mes, 'Cobrado')), cobAnt = suma(c.delMes(c.mesAnt, 'Cobrado'));
+    const nVen = c.delMes(c.mes).filter((v) => v.estado !== 'Perdido').length, nVenAnt = c.delMes(c.mesAnt).filter((v) => v.estado !== 'Perdido').length;
+    const per = c.delMes(c.mes, 'Perdido'), perAnt = c.delMes(c.mesAnt, 'Perdido');
+    const nombreAnt = fMes.format(utc(c.mesAnt + '-01')).replace('.', ''); // corto, para que quepa en la tarjeta del móvil
+    // Cifra de una tarjeta: v es el número (para contarlo al abrir) y fmt su formato; sin v, el texto tal cual («—»).
+    let nTarjeta = 0;
+    const tarjeta = (icono, lbl, v, fmt, sub) => `<div class="kpi" style="--i:${nTarjeta++ % 4}"><span class="lbl">${SIMBOLO[icono]}${lbl}</span>` +
+      `<span class="val"${v == null ? '' : ` data-v="${v}" data-fmt="${fmt}"`}>${v == null ? fmt : FMT[fmt](v)}</span><span class="sub">${sub}</span></div>`;
+    $('#cifras-mes').innerHTML =
+      tarjeta('cobrado', 'Cobrado', cob, 'eur', `${delta(cob - cobAnt, (d) => eur.format(d))} vs ${esc(nombreAnt)}`) +
+      tarjeta('ventas', 'Ventas', nVen, 'num', `${delta(nVen - nVenAnt, (d) => d)} vs ${esc(nombreAnt)}`) +
+      tarjeta('pendiente', 'Pendiente', suma(c.pendientes), 'eur', `${c.pendientes.length} ${c.pendientes.length === 1 ? 'pedido' : 'pedidos'} en curso`) +
+      tarjeta('perdido', 'Perdido', suma(per), 'eur', `${per.length} ${per.length === 1 ? 'cancelado' : 'cancelados'} · ${delta(suma(per) - suma(perAnt), (d) => eur.format(d), false)} vs ${esc(nombreAnt)}`);
+
+    // Pedidos en curso, separados por app y por fase (N por enviar, W enviado; otro código: sin ese dato),
+    // con lo que falta enviar arriba y el pedido más antiguo primero.
+    $('#curso-t').textContent = c.pendientes.length ? `Pedidos en curso (${c.pendientes.length})` : 'Pedidos en curso';
+    const porEnviar = c.pendientes.filter((v) => v.codigo === 'N').length, globo = $('#globo-ventas');
+    globo.hidden = !porEnviar; globo.textContent = porEnviar;
+    globo.parentElement.setAttribute('aria-label', `Pedidos y ventas${porEnviar ? `: ${porEnviar} por enviar` : ''}`);
+    const fase = (v) => (v.codigo === 'N' || v.codigo === 'W' ? v.codigo : '?');
+    const grupos = [['N', 'por enviar'], ['W', 'enviados'], ['?', 'sin saber si están enviados']].flatMap(([f, nombre]) =>
+      ['Vinted', 'Wallapop'].map((app) => ({ app, f, nombre, pedidos: c.pendientes.filter((v) => v.app === app && fase(v) === f) })));
+    const caja = (g) => `<div class="${g.f === 'N' && g.pedidos.length ? 'toca' : ''}"><i class="app ${corta(g.app)}"></i>${esc(g.app)} · ${g.nombre}<b class="num">${g.pedidos.length}</b></div>`;
+    $('#curso').innerHTML = !c.pendientes.length ? '<ul class="lista"><li><span class="tit">Nada pendiente</span><span class="det">Todos los pedidos están cerrados.</span></li></ul>'
+      : `<div class="fases">${grupos.filter((g) => g.f !== '?').map(caja).join('')}</div>` + grupos.filter((g) => g.pedidos.length).map((g) =>
+        `<h3 class="grupo"><i class="app ${corta(g.app)}"></i>${esc(g.app)} · ${g.nombre} (${g.pedidos.length})</h3><ul class="lista">` + g.pedidos.map((v) => {
+          const hace = diasEntre(v.fecha, c.hoy), urge = g.f === 'N' && hace >= 3;
+          return `<li><span class="tit">${esc(v.articulo)}</span>
+            <span class="det">Pedido <span class="${urge ? 'urgente' : ''}">${hace === 0 ? 'hoy' : hace === 1 ? 'ayer' : `hace ${hace} días`}</span></span>
+            <span class="der num">${esc(eur.format(v.importe))}</span></li>`;
+        }).join('') + '</ul>').join('');
+
+    // Escaparate.
+    const an = datos.anuncios, pv = c.enVenta, valor = suma(pv, (p) => p.precio);
+    const solo = (k) => pv.filter((p) => p.apps.size === 1 && p.apps.has(k)).length;
+    const hoyRow = c.ultimoDia, esHoy = hoyRow?.fecha === c.hoy;
+    const nuevos = (campo) => (hoyRow ? hoyRow[campo].Vinted + hoyRow[campo].Wallapop : null);
+    // Sin la REF de todos los anuncios no se sabe cuáles son el mismo producto: mejor «—» que una cifra de más.
+    const faltan = c.refsPorLeer ? `faltan las REF de ${c.refsPorLeer} anuncios: la extensión las lee en cada vuelta` : '';
+    $('#cifras-escaparate').innerHTML =
+      tarjeta('productos', 'A la venta', faltan ? null : pv.length, faltan ? '—' : 'num', faltan || `${pv.length - solo('Vinted') - solo('Wallapop')} en las dos · ${solo('Vinted')} solo Vinted · ${solo('Wallapop')} solo Wallapop`) +
+      tarjeta('valor', 'Valor', faltan ? null : valor, faltan ? '—' : 'eur0', faltan ? `${an.length} anuncios suman ${esc(eur0.format(suma(an, (a) => a.precio)))}, con repetidos`
+        : `${eur.format(pv.length ? valor / pv.length : 0)} de media${c.bloqueados ? ` · ${c.bloqueados} reservados aparte` : ''}${c.sinRef ? ` · ${c.sinRef} sin REF fuera` : ''}`) +
+      tarjeta('visitas', `Visitas ${esHoy ? 'hoy' : 'nuevas'}`, nuevos('visitas'), nuevos('visitas') == null ? '—' : 'num', hoyRow ? (esHoy ? 'El día va a medias' : esc(fDia.format(utc(hoyRow.fecha)))) : 'Desde mañana') +
+      tarjeta('favoritos', `Favoritos ${esHoy ? 'hoy' : 'nuevos'}`, nuevos('favoritos'), nuevos('favoritos') == null ? '—' : 'num', `${num.format(suma(an, (a) => a.favoritos))} en total`);
+    const filaAnuncio = (a, der, det) => {
+      const url = enlace(a), t = `<i class="app ${corta(a.app)}"></i>${esc(a.articulo)}`;
+      return `<li><span class="tit">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${t}</a>` : t}</span><span class="det">${det}</span><span class="der num">${der}</span></li>`;
+    };
+    $('#calientes').innerHTML = c.calientes.length ? c.calientes.map((a) => filaAnuncio(a, `${a.favoritos} ♥<small>${esc(eur.format(a.precio))}</small>`,
+      `${num.format(a.visitas)} visitas${a.dias != null ? ` · ${a.dias} ${a.dias === 1 ? 'día' : 'días'}` : ''}`)).join('') : '<li><span class="tit">Ningún anuncio tiene favoritos todavía</span></li>';
+    $('#dormidos-nota').textContent = c.hay7d ? 'Sin visitas en la última semana: candidatos a subir de nuevo desde cero.'
+      : 'Menos de una visita cada dos días desde que se subieron: candidatos a subir de nuevo desde cero.';
+    $('#dormidos').innerHTML = c.dormidos.length ? c.dormidos.slice(0, 6).map((a) => filaAnuncio(a, `${a.dias ?? '—'} d<small>${num.format(a.visitas)} visitas</small>`,
+      `${esc(eur.format(a.precio))} · ${esc(a.app)}`)).join('') + (c.dormidos.length > 6 ? `<li><span class="det">Y ${c.dormidos.length - 6} más: ordénalos por visitas en la tabla de anuncios.</span></li>` : '')
+      : '<li><span class="tit">Ninguno: todos tienen visitas</span></li>';
+
+    // Visitas y favoritos por día.
+    for (const [id, campo, nombre] of [['#g-visitas', 'visitas', 'Visitas nuevas por día'], ['#g-favoritos', 'favoritos', 'Favoritos nuevos por día']]) {
+      const filas = c.porDia.map((d) => ({ fecha: d.fecha, ...d[campo] }));
+      if (filas.length < 2) {
+        $(id).innerHTML = `<p class="vacio">Se va llenando día a día: las visitas se anotan desde el 26-10-2026${filas.length ? ` (${fDia.format(utc(filas[0].fecha))}: ${num.format(filas[0].Vinted + filas[0].Wallapop)})` : ''}.</p>`;
+        continue;
+      }
+      barras($(id), filas, {
+        nombre, alto: 160, fmtEje: (v) => num.format(v), etiqueta: (f) => fDia.format(utc(f.fecha)).replace('.', ''),
+        enCurso: (f) => f.fecha === c.hoy,
+        tip: (f) => `<b>${esc(mayus(fDiaSem.format(utc(f.fecha))))}</b>${f.fecha === c.hoy ? ' (va a medias)' : ''}<br>${num.format(f.Vinted + f.Wallapop)} ${campo}<br><span class="t">Vinted ${f.Vinted ?? 'sin leer'} · Wallapop ${f.Wallapop ?? 'sin leer'}</span>`,
+      });
+    }
+
+    // Cobrado por mes.
+    barras($('#g-meses'), c.meses, {
+      nombre: 'Cobrado por mes, últimos 12 meses', fmtEje: (v) => eur0.format(v), etiqueta: (f) => fMes.format(utc(f.mes + '-01')).replace('.', ''),
+      enCurso: (f) => f.mes === c.mes,
+      tip: (f) => `<b>${esc(mayus(fMesLargo.format(utc(f.mes + '-01'))))}</b>${f.mes === c.mes ? ' (en curso)' : ''}<br>Cobrado ${eur.format(f.cobrado)}<br><span class="t">Vinted ${eur.format(f.Vinted)} · Wallapop ${eur.format(f.Wallapop)}${f.pendiente ? `<br>Pendiente ${eur.format(f.pendiente)}` : ''}${f.perdido ? `<br>Perdido ${eur.format(f.perdido)}` : ''}</span>`,
+    });
+    $('#t-meses').innerHTML = '<thead><tr><th>Mes</th><th class="n">Cobrado</th><th class="n estrecho-no">Vinted</th><th class="n estrecho-no">Wallapop</th><th class="n">Pendiente</th><th class="n">Perdido</th><th class="n estrecho-no">Pedidos perdidos</th></tr></thead><tbody>' +
+      c.meses.slice().reverse().map((f) => `<tr><td>${esc(mayus(fMesLargo.format(utc(f.mes + '-01'))))}</td><td class="n">${eur.format(f.cobrado)}</td><td class="n estrecho-no">${eur.format(f.Vinted)}</td><td class="n estrecho-no">${eur.format(f.Wallapop)}</td><td class="n">${eur.format(f.pendiente)}</td><td class="n">${eur.format(f.perdido)}</td><td class="n estrecho-no">${f.pedidos ? pct.format(f.perdidos / f.pedidos) : '—'}</td></tr>`).join('') + '</tbody>';
+
+    pintarAnuncios();
+    pintarVentas();
+  }
+
+  function pintarAnuncios() {
+    const q = $('#buscar').value.trim().toLowerCase();
+    const col = (campo, txt, cls = '') => `<th class="${cls}" ${orden.campo === campo ? `aria-sort="${orden.asc ? 'ascending' : 'descending'}"` : ''}><button data-orden="${campo}">${txt}</button></th>`;
+    const titulo = (a) => String(a.articulo ?? '');
+    const filas = datos.anuncios.filter((a) => (!filtroApp || a.app === filtroApp) && (!q || titulo(a).toLowerCase().includes(q) || (a.ref && `ref ${a.ref}`.includes(q))));
+    const k = orden.campo, s = orden.asc ? 1 : -1;
+    // Puesto null: no sale en los 120 primeros, detrás del 120. Sin puesto (Vinted o sin buscar): al final en los dos sentidos.
+    const valor = (a) => (k === 'articulo' ? titulo(a) : k !== 'puesto' ? a[k] ?? -Infinity : a.puesto === undefined ? Infinity * s : a.puesto ?? 121);
+    filas.sort((a, b) => {
+      const x = valor(a), y = valor(b);
+      return (typeof x === 'string' ? x.localeCompare(y, 'es') : x - y) * s || titulo(a).localeCompare(titulo(b), 'es');
+    });
+    $('#anuncios-t').textContent = `Todos tus anuncios (${filas.length})`;
+    $('#t-anuncios').innerHTML = `<thead><tr>${col('articulo', 'Anuncio')}${col('precio', 'Precio', 'n')}${col('dias', 'Días', 'n estrecho-no')}${col('visitas', 'Visitas', 'n')}${col('visitas_7d', '7 días', 'n estrecho-no')}${col('favoritos', '♥', 'n')}${col('puesto', 'Puesto', 'n estrecho-no')}</tr></thead><tbody>` +
+      filas.map((a) => {
+        const url = enlace(a), t = `<i class="app ${corta(a.app)}"></i>${esc(a.articulo)}`;
+        const puesto = a.puesto === undefined ? '<td class="n estrecho-no">—</td>'
+          : `<td class="n estrecho-no" data-tip="${esc(`<b>${a.puesto === null ? 'Más allá del 120' : `Puesto ${a.puesto}`}</b><br>Buscando «${esc(a.busqueda)}» en Wallapop desde tu zona`)}">${a.puesto ?? '+120'}</td>`;
+        return `<tr class="${a.visitas === 0 ? 'cero' : ''}"><td class="art">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${t}</a>` : `<span class="t">${t}</span>`}${a.ref ? `<span class="marca-estado">REF ${esc(a.ref)}</span>` : ''}${a.estado !== 'activo' ? `<span class="marca-estado">${esc(a.estado)}</span>` : ''}</td>` +
+          `<td class="n">${esc(eur.format(a.precio))}</td><td class="n estrecho-no">${a.dias ?? '—'}</td><td class="n vis">${num.format(a.visitas)}</td><td class="n estrecho-no">${a.visitas_7d ?? '—'}</td><td class="n">${a.favoritos}</td>${puesto}</tr>`;
+      }).join('') + '</tbody>';
+    paginar();
+  }
+
+  function pintarVentas() {
+    const todas = datos.ventas.slice().sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0));
+    $('#ventas').innerHTML = todas.slice(0, fija.matches ? todas.length : verVentas).map((v) => `<li><span class="tit"><i class="app ${corta(v.app)}"></i>${esc(v.articulo || '(sin título)')}</span>
+      <span class="det">${chipEstado(v.estado, ESTADO[v.estado] ?? 'warn')} · ${esc(fDia.format(utc(v.fecha)))}${v.entrega === 'En mano' ? ' · en mano' : ''}</span>
+      <span class="der num">${esc(eur.format(v.importe))}</span></li>`).join('');
+    $('#ventas-mas').hidden = todas.length <= verVentas;
+    paginar();
+  }
+
+  // ---------- Tablet en horizontal: sin desplazarse ----------
+  // Cada lista larga se corta en las filas que caben en su tarjeta y el resto pasa a páginas siguientes.
+  const fija = matchMedia('(min-width: 900px) and (min-height: 500px) and (orientation: landscape) and (pointer: coarse)');
+  const HOJAS = [['#curso', '.fases, .grupo, li'], ['#calientes', 'li'], ['#dormidos', 'li'], ['#t-anuncios', 'tbody tr'], ['#ventas', 'li']];
+  const hojaAbierta = {};
+  function paginar() {
+    for (const [id, sel] of HOJAS) {
+      const lista = $(id), card = lista.closest('.card'), filas = [...lista.querySelectorAll(sel)];
+      card.querySelector('.paginas')?.remove();
+      filas.forEach((f) => f.classList.remove('oculta', 'arriba'));
+      if (!fija.matches || !card.offsetParent || !filas.length) continue;
+      const pie = document.createElement('div');
+      pie.className = 'paginas';
+      pie.innerHTML = '<button type="button" aria-label="Página anterior">‹</button><span></span><button type="button" aria-label="Página siguiente">›</button>';
+      card.append(pie);
+      // Dónde empieza cada página: la fila que ya no cabe abre la siguiente. Un título de grupo no se queda solo al final.
+      // Todo con getBoundingClientRect: la tarjeta entra escalada y así las medidas van en la misma escala.
+      const cr = card.getBoundingClientRect(), escala = cr.height / card.offsetHeight;
+      const fondo = cr.bottom - parseFloat(getComputedStyle(card).paddingBottom) * escala - pie.getBoundingClientRect().height;
+      const cajas = filas.map((f) => f.getBoundingClientRect());
+      const inicios = [0];
+      let desplaza = 0;
+      cajas.forEach((r, i) => {
+        if (i > inicios.at(-1) && r.bottom - desplaza > fondo) {
+          const j = i - 1 > inicios.at(-1) && filas[i - 1].classList.contains('grupo') ? i - 1 : i;
+          inicios.push(j); desplaza = cajas[j].top - cajas[0].top;
+        }
+      });
+      const n = inicios.length, p = Math.min(hojaAbierta[id] ?? 0, n - 1);
+      hojaAbierta[id] = p;
+      if (n === 1) { pie.remove(); continue; }
+      const fin = p + 1 < n ? inicios[p + 1] : filas.length;
+      filas.forEach((f, i) => f.classList.toggle('oculta', i < inicios[p] || i >= fin));
+      filas[inicios[p]].classList.add('arriba');
+      const [ant, sig] = pie.querySelectorAll('button');
+      pie.querySelector('span').textContent = `${p + 1} de ${n}`;
+      ant.disabled = p === 0; sig.disabled = p === n - 1;
+      ant.onclick = () => pasar(id, -1); sig.onclick = () => pasar(id, 1);
+    }
+  }
+  function pasar(id, paso) { hojaAbierta[id] = Math.max(0, (hojaAbierta[id] ?? 0) + paso); paginar(); }
+  // Con la letra Geist ya cargada las filas cambian de alto: se vuelven a repartir.
+  document.fonts?.addEventListener('loadingdone', () => paginar());
+  // Deslizar el dedo a un lado pasa de página, como en un libro.
+  for (const [id] of HOJAS) {
+    const card = $(id).closest('.card');
+    let x0 = null, y0 = null;
+    card.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; });
+    card.addEventListener('pointerup', (e) => {
+      if (x0 === null || !card.querySelector('.paginas')) return;
+      const dx = e.clientX - x0, dy = e.clientY - y0;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) pasar(id, dx < 0 ? 1 : -1);
+      x0 = null;
+    });
+  }
+  // Lo que se despliega (las tablas y «Cómo se cuenta») sale en una hoja encima en vez de alargar la pantalla.
+  const hoja = document.createElement('dialog');
+  hoja.className = 'hoja';
+  document.body.append(hoja);
+  document.querySelectorAll('#panel details').forEach((d) => d.querySelector('summary').addEventListener('click', (e) => {
+    if (!fija.matches) return;
+    e.preventDefault();
+    const cuerpo = d.cloneNode(true);
+    cuerpo.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
+    const titulo = d.querySelector('summary').textContent.replace(/^Ver (las |el )?/, '');
+    hoja.innerHTML = `<h2>${esc(titulo[0].toUpperCase() + titulo.slice(1))}</h2>`;
+    hoja.append(...[...cuerpo.children].filter((x) => x.tagName !== 'SUMMARY'));
+    hoja.insertAdjacentHTML('beforeend', '<button type="button" class="mas">Cerrar</button>');
+    hoja.showModal();
+  }));
+  hoja.addEventListener('click', (e) => { if (e.target === hoja || e.target.classList.contains('mas')) hoja.close(); });
+  fija.addEventListener('change', () => pintar());
+
+  // ---------- Interacción ----------
+  const tip = $('#tip');
+  const mostrar = (el, x, y) => {
+    tip.innerHTML = el.getAttribute('data-tip'); tip.hidden = false;
+    const r = tip.getBoundingClientRect();
+    tip.style.left = `${Math.min(innerWidth - r.width - 8, Math.max(8, x - r.width / 2))}px`;
+    tip.style.top = `${y - r.height - 14 < 8 ? y + 18 : y - r.height - 14}px`;
+  };
+  document.addEventListener('pointermove', (e) => { const el = e.target.closest?.('[data-tip]'); if (el && e.pointerType === 'mouse') mostrar(el, e.clientX, e.clientY); else if (e.pointerType === 'mouse') tip.hidden = true; });
+  document.addEventListener('click', (e) => { const el = e.target.closest?.('[data-tip]'); if (el) mostrar(el, e.clientX, e.clientY); else tip.hidden = true; });
+  addEventListener('scroll', () => { tip.hidden = true; }, { passive: true });
+  $('#t-anuncios').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-orden]'); if (!b) return;
+    const campo = b.dataset.orden;
+    orden = orden.campo === campo ? { campo, asc: !orden.asc } : { campo, asc: campo === 'articulo' || campo === 'visitas' };
+    hojaAbierta['#t-anuncios'] = 0; pintarAnuncios();
+  });
+  $('#buscar').addEventListener('input', () => { hojaAbierta['#t-anuncios'] = 0; pintarAnuncios(); });
+  document.querySelectorAll('.filtro').forEach((b) => b.addEventListener('click', () => {
+    filtroApp = b.dataset.app;
+    document.querySelectorAll('.filtro').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    hojaAbierta['#t-anuncios'] = 0; pintarAnuncios();
+  }));
+  $('#ventas-mas').addEventListener('click', () => { verVentas += 25; pintarVentas(); });
+
+  // Secciones plegables. Este navegador recuerda cuáles están plegadas.
+  let plegadas;
+  try { plegadas = new Set(JSON.parse(localStorage.getItem('secciones_plegadas') || '[]')); } catch { plegadas = new Set(); }
+  const plegar = (sec, si) => { sec.classList.toggle('plegada', si); sec.querySelector('.plegar').setAttribute('aria-expanded', String(!si)); };
+  document.querySelectorAll('.seccion[data-sec]').forEach((sec) => {
+    plegar(sec, plegadas.has(sec.dataset.sec));
+    sec.querySelector('.plegar').addEventListener('click', () => {
+      const si = !sec.classList.contains('plegada');
+      plegar(sec, si);
+      plegadas[si ? 'add' : 'delete'](sec.dataset.sec);
+      try { localStorage.setItem('secciones_plegadas', JSON.stringify([...plegadas])); } catch {}
+      if (!si) pintar(); // plegada, una gráfica no tiene ancho: al desplegarla se vuelve a dibujar
+    });
+  });
+
+  // Pestañas: se ve una sección cada vez y la elegida queda en la dirección (#ventas), para que al recargar se vuelva a ella.
+  const VISTAS = ['inicio', 'ventas', 'escaparate', 'anuncios', 'dinero'];
+  function verVista(vista, arriba = true) {
+    document.querySelectorAll('[data-en]').forEach((s) => { s.hidden = s.dataset.en !== vista; s.classList.remove('primera-de-vista'); });
+    document.querySelector(`[data-en="${vista}"]`).classList.add('primera-de-vista');
+    $('#panel').dataset.vista = vista;
+    document.querySelectorAll('.pestanas button').forEach((b) => b.dataset.vista === vista ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+    history.replaceState(null, '', vista === 'inicio' ? location.pathname : `#${vista}`);
+    if (arriba) scrollTo(0, 0);
+    pintar(); // oculta, una gráfica no tiene ancho: al mostrarla se vuelve a dibujar
+  }
+  document.querySelectorAll('.pestanas button').forEach((b) => b.addEventListener('click', () => {
+    if (b.hasAttribute('aria-current')) scrollTo({ top: 0, behavior: 'smooth' }); // como en X: tocar la pestaña abierta sube arriba
+    else verVista(b.dataset.vista);
+  }));
+  verVista(VISTAS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'inicio', false);
+
+  // ---------- Carga: pide los datos a /api/panel con la clave guardada, cada 2 minutos mientras se mira ----------
+  const form = $('#entrar'), input = $('#clave'), error = $('#entrar-error'), panel = $('#panel');
+  const leer = () => { try { return localStorage.getItem('clave_panel'); } catch { return null; } };
+  const guardar = (k) => { try { k ? localStorage.setItem('clave_panel', k) : localStorage.removeItem('clave_panel'); } catch {} };
+  let clave = leer(), cargando = false, cargadoA = null;
+
+  function entrada(mensaje) {
+    panel.hidden = true; form.hidden = false;
+    error.hidden = !mensaje; error.textContent = mensaje || '';
+    input.focus();
+  }
+
+  // Al abrir, las cifras cuentan desde cero (900 ms, tras 200 ms) y las tarjetas y barras entran; en las recargas de cada 2 minutos, no.
+  function estreno() {
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) for (const el of document.querySelectorAll('[data-v][data-fmt]')) {
+      const fin = Number(el.dataset.v), fmt = FMT[el.dataset.fmt], t0 = performance.now() + 200;
+      const cuadro = (t) => { const p = Math.min(1, Math.max(0, (t - t0) / 900)); el.innerHTML = fmt(fin * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(cuadro); };
+      el.innerHTML = fmt(0); requestAnimationFrame(cuadro);
+    }
+    setTimeout(() => document.body.classList.remove('primera'), 2600);
+  }
+
+  function estadoLector(origenes = {}) {
+    const lector = origenes.lector, ultima = Object.values(origenes).map((o) => o.ultima).sort().at(-1);
+    const min = lector ? (Date.now() - Date.parse(lector.ultima)) / 60e3 : null;
+    const vivo = $('#vivo'), t = $('#vivo-t'), aviso = $('#aviso');
+    vivo.classList.toggle('ok', min != null && min < 120 && !lector.errores);
+    t.textContent = min == null ? (ultima ? `Leído ${fCuando.format(new Date(ultima))}` : 'Sin lecturas')
+      : min < 1 ? 'En vivo · ahora' : min < 60 ? `En vivo · hace ${Math.round(min)} min` : `Leído a las ${fHora.format(new Date(lector.ultima))}`;
+    const avisos = [];
+    if (!lector) avisos.push('Todavía no ha llegado ninguna lectura de la extensión «Lector de ventas»: los datos son de la última lectura de Claude.');
+    else if (min > 120) avisos.push(`La última lectura fue el ${fCuando.format(new Date(lector.ultima))}. Mira que el PC esté encendido con Chrome abierto.`);
+    if (lector?.errores) avisos.push(`La última lectura tuvo problemas: ${lector.errores}.`);
+    aviso.hidden = !avisos.length; aviso.textContent = avisos.join(' ');
+  }
+
+  async function cargar() {
+    if (!clave || cargando) return;
+    cargando = true;
+    try {
+      const r = await fetch('/api/panel', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ clave }) });
+      if (r.status === 401) { guardar(null); clave = null; entrada('La clave no es correcta.'); return; }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const primera = !datos;
+      datos = await r.json(); cargadoA = new Date();
+      form.hidden = true; panel.hidden = false;
+      estadoLector(datos.origenes);
+      if (primera) document.body.classList.add('primera');
+      pintar();
+      if (primera) estreno();
+    } catch {
+      form.hidden = true; panel.hidden = false;
+      $('#vivo').classList.remove('ok');
+      if (datos) $('#vivo-t').textContent = 'Sin conexión';
+      $('#aviso').hidden = false;
+      $('#aviso').textContent = datos ? `No se ha podido actualizar: los datos son de las ${fHora.format(cargadoA)}. Se vuelve a intentar en 2 minutos.`
+        : 'No se han podido cargar los datos. Se vuelve a intentar en 2 minutos.';
+    } finally {
+      cargando = false;
+    }
+  }
+
+  form.addEventListener('submit', (ev) => { ev.preventDefault(); clave = input.value.trim(); guardar(clave); cargar(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) cargar(); });
+  setInterval(() => { if (!document.hidden) cargar(); }, 120000);
+  let t;
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(pintar, 200); });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  clave ? cargar() : entrada();
+})();
+</script>
+</body>
+</html>

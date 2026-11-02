@@ -1,0 +1,12 @@
+# Claves y datos de cada uno: nunca al repositorio
+.env*
+claves.json
+herramientas/config.json
+herramientas/datos/
+herramientas/analisis.md
+herramientas/hoja.jpg
+pc/despertar.log
+
+node_modules/
+.vercel/
+__pycache__/

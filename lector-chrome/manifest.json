@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Lector de ventas",
+  "version": "1.8",
+  "description": "Lee cada 30 minutos tus anuncios y tus ventas de Vinted y Wallapop y los manda a tu panel.",
+  "permissions": ["alarms", "scripting", "storage", "unlimitedStorage", "bookmarks", "cookies", "power"],
+  "host_permissions": ["https://www.vinted.es/*", "https://es.wallapop.com/*", "https://api.wallapop.com/*"],
+  "optional_host_permissions": ["https://*/*"],
+  "background": { "service_worker": "fondo.js", "type": "module" },
+  "options_page": "opciones.html",
+  "action": { "default_title": "Leer ahora", "default_icon": "icono.png" },
+  "icons": { "128": "icono.png" }
+}

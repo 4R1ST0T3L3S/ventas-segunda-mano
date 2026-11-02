@@ -471,13 +471,13 @@
     <details class="card defs-card">
       <summary class="etiqueta">Cómo se cuenta</summary>
       <ul class="defs">
-        <li>Vendido: todo lo que se ha comprado y no se ha cancelado, cobrado o aún en curso, por la fecha del pedido. Las semanas van de lunes a domingo, como el resumen de los lunes.</li>
+        <li>Vendido: todo lo que se ha comprado y no se ha cancelado, cobrado o aún en curso, por la fecha del pedido. Las semanas van de lunes a domingo.</li>
         <li>Cobrado: Vinted "Pedido finalizado", Wallapop "Transacción completada" o vendido en mano. Es el importe del artículo: ni Vinted ni Wallapop cobran comisión al vendedor; el envío y la protección los paga el comprador.</li>
         <li>Pendiente: pagado por el comprador, aún sin cerrar. Perdido: cancelado, reembolsado o devuelto.</li>
         <li>Productos y valor del escaparate: cada producto cuenta una vez aunque esté en Vinted y en Wallapop. Los anuncios se unen por la REF de la descripción y el producto vale el precio más bajo de sus anuncios. Los reservados u ocultos (vendidos en la otra app, esperando a cerrar) no cuentan. Tampoco los anuncios sin REF en la descripción, como el de diseño web: no son productos.</li>
         <li>7 días: lo que han subido las visitas de cada anuncio en la última semana. Sale en cuanto hay una semana de lecturas.</li>
-        <li>Visitas y favoritos: la extensión «Lector de ventas» los anota cada 30 minutos. Lo nuevo de un día es lo que ha subido cada anuncio desde el día anterior, así que el de hoy va a medias. Se guardan desde el 26-10-2026.</li>
-        <li>Ventas en mano de Wallapop: precio del anuncio y día en que se marcó como vendido. Claude las apunta los lunes.</li>
+        <li>Visitas y favoritos: la extensión «Lector de ventas» los anota cada 30 minutos. Lo nuevo de un día es lo que ha subido cada anuncio desde el día anterior, así que el de hoy va a medias. Se guardan desde la primera lectura de la extensión.</li>
+        <li>Ventas en mano de Wallapop: precio del anuncio y día en que se marcó como vendido. La extensión las lee en «Tu catálogo > Vendidos».</li>
       </ul>
     </details>
   </section>
@@ -753,7 +753,7 @@
     for (const [id, campo, nombre] of [['#g-visitas', 'visitas', 'Visitas nuevas por día'], ['#g-favoritos', 'favoritos', 'Favoritos nuevos por día']]) {
       const filas = c.porDia.map((d) => ({ fecha: d.fecha, ...d[campo] }));
       if (filas.length < 2) {
-        $(id).innerHTML = `<p class="vacio">Se va llenando día a día: las visitas se anotan desde el 26-10-2026${filas.length ? ` (${fDia.format(utc(filas[0].fecha))}: ${num.format(filas[0].Vinted + filas[0].Wallapop)})` : ''}.</p>`;
+        $(id).innerHTML = `<p class="vacio">Se va llenando día a día: las visitas se anotan desde la primera lectura de la extensión${filas.length ? ` (${fDia.format(utc(filas[0].fecha))}: ${num.format(filas[0].Vinted + filas[0].Wallapop)})` : ''}.</p>`;
         continue;
       }
       barras($(id), filas, {
@@ -943,6 +943,9 @@
   const form = $('#entrar'), input = $('#clave'), error = $('#entrar-error'), panel = $('#panel');
   const leer = () => { try { return localStorage.getItem('clave_panel'); } catch { return null; } };
   const guardar = (k) => { try { k ? localStorage.setItem('clave_panel', k) : localStorage.removeItem('clave_panel'); } catch {} };
+  // Los últimos datos se quedan en el aparato: el panel abre al momento con ellos, también sin conexión.
+  const recordar = (d) => { try { d ? localStorage.setItem('ultimos_datos', JSON.stringify({ t: Date.now(), d })) : localStorage.removeItem('ultimos_datos'); } catch {} };
+  const recordados = () => { try { return JSON.parse(localStorage.getItem('ultimos_datos')); } catch { return null; } };
   let clave = leer(), cargando = false, cargadoA = null;
 
   function entrada(mensaje) {
@@ -969,7 +972,7 @@
     t.textContent = min == null ? (ultima ? `Leído ${fCuando.format(new Date(ultima))}` : 'Sin lecturas')
       : min < 1 ? 'En vivo · ahora' : min < 60 ? `En vivo · hace ${Math.round(min)} min` : `Leído a las ${fHora.format(new Date(lector.ultima))}`;
     const avisos = [];
-    if (!lector) avisos.push('Todavía no ha llegado ninguna lectura de la extensión «Lector de ventas»: los datos son de la última lectura de Claude.');
+    if (!lector) avisos.push('Todavía no ha llegado ninguna lectura de la extensión «Lector de ventas».');
     else if (min > 120) avisos.push(`La última lectura fue el ${fCuando.format(new Date(lector.ultima))}. Mira que el PC esté encendido con Chrome abierto.`);
     if (lector?.errores) avisos.push(`La última lectura tuvo problemas: ${lector.errores}.`);
     aviso.hidden = !avisos.length; aviso.textContent = avisos.join(' ');
@@ -980,10 +983,11 @@
     cargando = true;
     try {
       const r = await fetch('/api/panel', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ clave }) });
-      if (r.status === 401) { guardar(null); clave = null; entrada('La clave no es correcta.'); return; }
+      if (r.status === 401) { guardar(null); recordar(null); clave = null; datos = null; entrada('La clave no es correcta.'); return; }
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const primera = !datos;
       datos = await r.json(); cargadoA = new Date();
+      recordar(datos);
       form.hidden = true; panel.hidden = false;
       estadoLector(datos.origenes);
       if (primera) document.body.classList.add('primera');
@@ -994,7 +998,7 @@
       $('#vivo').classList.remove('ok');
       if (datos) $('#vivo-t').textContent = 'Sin conexión';
       $('#aviso').hidden = false;
-      $('#aviso').textContent = datos ? `No se ha podido actualizar: los datos son de las ${fHora.format(cargadoA)}. Se vuelve a intentar en 2 minutos.`
+      $('#aviso').textContent = datos ? `No se ha podido actualizar: los datos son del ${fCuando.format(cargadoA)}. Se vuelve a intentar en 2 minutos.`
         : 'No se han podido cargar los datos. Se vuelve a intentar en 2 minutos.';
     } finally {
       cargando = false;
@@ -1007,6 +1011,13 @@
   let t;
   addEventListener('resize', () => { clearTimeout(t); t = setTimeout(pintar, 200); });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  const previos = clave && recordados();
+  if (previos?.d) {
+    datos = previos.d; cargadoA = new Date(previos.t);
+    form.hidden = true; panel.hidden = false;
+    estadoLector(datos.origenes);
+    document.body.classList.add('primera'); pintar(); estreno();
+  }
   clave ? cargar() : entrada();
 })();
 </script>

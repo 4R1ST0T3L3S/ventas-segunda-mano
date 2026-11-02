@@ -1,7 +1,9 @@
 {
  "name": "Venta Online",
  "short_name": "Venta Online",
+ "description": "Panel privado de tus ventas en Vinted y Wallapop.",
  "lang": "es",
+ "id": "/",
  "start_url": "/",
  "scope": "/",
  "display": "standalone",
@@ -24,5 +26,10 @@
    "type": "image/png",
    "purpose": "maskable"
   }
+ ],
+ "shortcuts": [
+  { "name": "Pedidos y ventas", "url": "/#ventas", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+  { "name": "Anuncios", "url": "/#anuncios", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+  { "name": "Dinero", "url": "/#dinero", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
  ]
 }

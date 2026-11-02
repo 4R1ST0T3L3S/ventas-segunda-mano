@@ -1,4 +1,5 @@
-// Datos del panel: un solo JSON en Vercel Blob (nombre secreto en DATOS_RUTA). Formato completo en DATOS.md.
+// Datos del panel: un solo JSON en un almacén privado de Vercel Blob (nombre en DATOS_RUTA, ventas.json si no se pone).
+// Formato completo en DATOS.md.
 // - ventas: {clave: {fecha, app, articulo, importe, estado, entrega, codigo, hora, anuncios, pedido}}
 // - lecturas: {AAAA-MM-DD: {Vinted: [anuncio], Wallapop: [anuncio]}}; la última lectura del día sustituye a las anteriores.
 //   anuncio = {clave, url, articulo, precio, publicado, publicado_en, visitas, favoritos, chats, ofertas?, estado, ref};
@@ -22,10 +23,10 @@
 // - estadisticas: [AAAA-MM-DD], los días con las visitas, favoritos y chats de cada anuncio según Wallapop, guardados
 //   aparte en rutaEstadisticas(fecha) como {fecha, app, anuncios: {clave: [visitas, favoritos, chats]}}.
 // Los cálculos de diario y anuncios son los de estadisticas/panel.py.
-import { put, head, BlobNotFoundError } from '@vercel/blob';
+import { put, get } from '@vercel/blob';
 import { timingSafeEqual } from 'node:crypto';
 
-const RUTA = process.env.DATOS_RUTA;
+const RUTA = process.env.DATOS_RUTA || 'ventas.json';
 const APPS = ['Vinted', 'Wallapop'];
 const ESTADO = { C: 'Cobrado', W: 'Pendiente', N: 'Pendiente', P: 'Pendiente', X: 'Perdido', A: 'Perdido', D: 'Perdido' };
 
@@ -41,22 +42,16 @@ export function claveValida(req, variable) {
   return buena.length > 0 && dada.length === buena.length && timingSafeEqual(dada, buena);
 }
 
-// Cada head() gasta una operación del almacén (el plan Hobby da 10.000 al mes y, si se pasa, lo cierra 30 días),
-// así que la dirección del JSON, que no cambia, se pide una vez por instancia.
-let direccion;
-export async function cargar() {
-  try {
-    direccion ??= (await head(RUTA)).url;
-    const r = await fetch(`${direccion}?t=${Date.now()}`, { cache: 'no-store' });
-    if (!r.ok) { direccion = null; throw new Error(`Blob ${r.status}`); }
-    return { ...vacio(), ...(await r.json()) };
-  } catch (e) {
-    if (e instanceof BlobNotFoundError) return vacio();
-    throw e;
-  }
+// El almacén es privado: los archivos solo se leen desde aquí, con las credenciales del almacén. null si no existe.
+async function leer(ruta, useCache) {
+  const r = await get(ruta, { access: 'private', useCache });
+  return r ? new Response(r.stream).json() : null;
 }
+// Quien va a cambiar el JSON principal (la ingesta y los avisos) lo lee sin caché (fresco). El panel se conforma con la
+// copia de la caché, de hasta 60 s: leer sin caché gasta una operación simple y el panel pide datos cada 2 minutos.
+export const cargar = async (fresco = false) => ({ ...vacio(), ...(await leer(RUTA, !fresco)) });
 
-const opciones = { access: 'public', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json', cacheControlMaxAge: 60 };
+const opciones = { access: 'private', addRandomSuffix: false, allowOverwrite: true, contentType: 'application/json', cacheControlMaxAge: 60 };
 export const guardar = (d) => put(RUTA, JSON.stringify(d), opciones);
 // Un día de lecturas, con la forma de hoy. Se escribe una vez, al empezar el día siguiente.
 export const rutaHistorial = (fecha) => `${RUTA.replace(/\.json$/, '')}/historial/${fecha}.json`;
@@ -66,15 +61,7 @@ export const rutaEstadisticas = (fecha) => `${RUTA.replace(/\.json$/, '')}/estad
 export const guardarEstadisticas = (dia) => put(rutaEstadisticas(dia.fecha), JSON.stringify(dia), opciones);
 // Lee un archivo guardado aparte, que está junto al JSON principal. Esos archivos no cambian, así que puede salir
 // de la caché. null si no existe.
-export async function leerArchivo(ruta) {
-  direccion ??= (await head(RUTA)).url;
-  const url = new URL(direccion);
-  url.pathname = '/' + ruta;
-  const r = await fetch(url);
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error(`Blob ${r.status}`);
-  return r.json();
-}
+export const leerArchivo = (ruta) => leer(ruta, true);
 
 const fila = (a) => [a.visitas, a.favoritos, a.precio, a.estado, a.chats ?? null, ...(a.ofertas != null ? [a.ofertas] : [])];
 

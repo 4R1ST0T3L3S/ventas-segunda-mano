@@ -7,13 +7,13 @@ Lo que la extensión «Lector de ventas» manda al panel, cómo se guarda y cóm
 Al mes se pueden hacer 2.000 operaciones avanzadas (`put`, `list`, `copy`) y 10.000 simples (`head`, o leer un archivo que no está en la caché), y transferir 10 GB. **Si se pasa uno de estos límites, el almacén se bloquea 30 días.** En los 30 días anteriores al 29-10-2026 se gastaron 104 avanzadas y 521 simples.
 
 - Cada lectura de la extensión cuesta un `put` (unos 32 al día, unos 1.000 al mes). El historial añade un `put` al día, y las estadísticas de Wallapop otro (7 la primera vez).
-- `cargar()` guarda la dirección del JSON y solo hace `head()` la primera vez en cada instancia.
+- El almacén es privado y se lee con `get()`. `cargar()` sale de la caché (hasta 60 s de retraso, sin gastar operaciones); solo la ingesta y los avisos, que cambian el JSON, lo leen sin caché con `cargar(true)`, y cada una de esas lecturas es una operación simple.
 - No usar `list()` para buscar días: las fechas están en `historial`.
 - El panel no debe pedir datos con la página oculta.
 
 ## El JSON principal
 
-Es un solo archivo, cuyo nombre secreto está en `DATOS_RUTA`. Las horas van en ISO y en UTC (`2026-10-29T12:19:17.000Z`); los días, en hora de Madrid (`AAAA-MM-DD`).
+Es un solo archivo, cuyo nombre está en la variable `DATOS_RUTA` (`ventas.json` si no se pone). Las horas van en ISO y en UTC (`2026-10-29T12:19:17.000Z`); los días, en hora de Madrid (`AAAA-MM-DD`).
 
 | Campo | Qué es |
 |---|---|
@@ -61,7 +61,7 @@ Es un solo archivo, cuyo nombre secreto está en `DATOS_RUTA`. Las horas van en 
 - Para saber cómo estaba todo a una hora: partir de `base` y aplicar en orden `c` y `fuera` de las lecturas hasta esa hora.
 - Las visitas de un anuncio en un intervalo son la resta de dos filas suyas. Hasta la 1.5, las de 0:00 a 8:00 llegaban todas juntas en la primera lectura de la mañana; en Vinted sigue siendo así.
 
-Con la primera lectura de un día nuevo, `hoy` se guarda aparte, en `rutaHistorial(fecha)` = `<DATOS_RUTA sin .json>/historial/AAAA-MM-DD.json`, y su fecha se añade a `historial`. Ese archivo ya no cambia. Su dirección es la del JSON principal cambiando el final, y se puede leer con `fetch` sin `head()`.
+Con la primera lectura de un día nuevo, `hoy` se guarda aparte, en `rutaHistorial(fecha)` = `<DATOS_RUTA sin .json>/historial/AAAA-MM-DD.json`, y su fecha se añade a `historial`. Ese archivo ya no cambia, así que `leerArchivo(ruta)` lo lee desde la caché.
 
 ### Estadísticas de Wallapop por día
 

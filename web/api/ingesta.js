@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (!claveValida(req, 'CLAVE_LECTOR')) return res.status(401).json({ error: 'Clave incorrecta' });
   const datos = req.body?.datos;
   if (!datos || typeof datos !== 'object') return res.status(400).json({ error: 'Faltan los datos' });
-  const d = await cargar();
+  const d = await cargar(true);
   const { nuevos, archivar, estadisticas } = ingerir(d, datos);
   // Los días que se cierran se guardan antes que d: si después falla d, la siguiente lectura los vuelve a escribir igual.
   for (const dia of archivar) await guardarDia(dia);

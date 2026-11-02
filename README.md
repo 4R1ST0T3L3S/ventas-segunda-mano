@@ -33,16 +33,13 @@ En GitHub, pulsa **Fork** (arriba a la derecha) para tener tu propia copia.
 
 1. En Vercel: **Add New… > Project**, e importa tu copia del repositorio.
 2. En **Root Directory** pulsa **Edit** y elige `web`. Vercel propone otra carpeta (`herramientas`): cámbiala. Pulsa **Deploy**.
-3. En el proyecto, abre **Storage > Create Database > Blob**. Ponle un nombre, elige la región más cercana (en España, París, `cdg1`) y en **Access** marca **Public**: el panel no funciona con un almacén privado. Pulsa **Create**. El almacén queda conectado al proyecto y Vercel añade solo sus variables.
-4. En **Settings > Environment Variables**, añade estas tres variables:
+3. En el proyecto, abre **Storage > Create Database > Blob**. Ponle un nombre, elige la región más cercana (en España, París, `cdg1`) y deja **Access** en **Private**: así tus datos solo los lee tu panel. Pulsa **Create**. El almacén queda conectado al proyecto y Vercel añade solo sus variables.
+4. En **Settings > Environment Variables**, añade estas dos variables:
 
    | Variable | Qué poner |
    |---|---|
    | `CLAVE_PANEL` | Una contraseña larga para entrar al panel. |
    | `CLAVE_LECTOR` | Otra contraseña larga, distinta, para la extensión. |
-   | `DATOS_RUTA` | El nombre del archivo de datos, con letras al azar, por ejemplo `ventas-k3j9x2m7q8.json`. |
-
-   Los archivos de Vercel Blob son públicos para quien sepa su dirección. Por eso `DATOS_RUTA` tiene que llevar una parte al azar que nadie pueda adivinar.
 
    Para inventar una contraseña larga, por ejemplo: `node -e "console.log(crypto.randomUUID())"`.
 5. En **Deployments**, vuelve a desplegar (los tres puntos del último despliegue > **Redeploy**) para que el panel use las variables.

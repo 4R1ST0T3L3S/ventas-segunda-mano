@@ -48,8 +48,8 @@ Tu panel queda en `https://<tu-proyecto>.vercel.app`.
 
 ### 3. La extensión
 
-1. Descarga el proyecto (**Code > Download ZIP**) y descomprímelo.
-2. En Chrome, abre `chrome://extensions`, activa el **Modo de desarrollador** y pulsa **Cargar descomprimida**. Elige la carpeta `lector-chrome`.
+1. Descarga [lector-de-ventas.zip](https://github.com/4R1ST0T3L3S/ventas-segunda-mano/releases/latest/download/lector-de-ventas.zip) y descomprímelo en una carpeta que no vayas a borrar: Chrome carga la extensión desde ahí.
+2. En Chrome, abre `chrome://extensions`, activa el **Modo de desarrollador** y pulsa **Cargar descomprimida**. Elige la carpeta `lector-de-ventas`.
 3. Se abren las opciones. Rellena:
    - la dirección de tu panel;
    - la `CLAVE_LECTOR`;
@@ -83,7 +83,7 @@ pip install -r herramientas/requirements.txt
 
 ## Actualizar
 
-En GitHub, en tu copia, pulsa **Sync fork**. Vercel vuelve a desplegar el panel solo. Para la extensión, descarga el proyecto de nuevo, sustituye la carpeta `lector-chrome` y pulsa el botón de recargar en `chrome://extensions`.
+En GitHub, en tu copia, pulsa **Sync fork**. Vercel vuelve a desplegar el panel solo. Para la extensión, descarga otra vez [lector-de-ventas.zip](https://github.com/4R1ST0T3L3S/ventas-segunda-mano/releases/latest/download/lector-de-ventas.zip), sustituye con él los archivos de la carpeta `lector-de-ventas` y pulsa el botón de recargar en `chrome://extensions`. Las opciones se conservan.
 
 ## Licencia
 

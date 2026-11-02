@@ -32,8 +32,8 @@ En GitHub, pulsa **Fork** (arriba a la derecha) para tener tu propia copia.
 ### 2. El panel en Vercel
 
 1. En Vercel: **Add New… > Project**, e importa tu copia del repositorio.
-2. En **Root Directory** elige `web`. Pulsa **Deploy**.
-3. En el proyecto, abre **Storage > Create Database > Blob** y conéctalo al proyecto. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN`.
+2. En **Root Directory** pulsa **Edit** y elige `web`. Vercel propone otra carpeta (`herramientas`): cámbiala. Pulsa **Deploy**.
+3. En el proyecto, abre **Storage > Create Database > Blob**. Ponle un nombre, elige la región más cercana (en España, París, `cdg1`) y en **Access** marca **Public**: el panel no funciona con un almacén privado. Pulsa **Create**. El almacén queda conectado al proyecto y Vercel añade solo sus variables.
 4. En **Settings > Environment Variables**, añade estas tres variables:
 
    | Variable | Qué poner |
